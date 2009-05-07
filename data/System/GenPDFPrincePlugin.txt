@@ -1,0 +1,30 @@
+%META:TOPICINFO{author="ProjectContributor" date="1241721334" format="1.1" version="1.2"}%
+---+!! %TOPIC%
+
+This plugin generates PDF using [[http://www.princexml.com/][Prince XML]].
+
+---++ Usage
+
+Get a PDF by adding =contenttype=application/pdf= to the view url like this:
+<verbatim class="tml">
+%SCRIPTURL{"view"}/%WEB%/%TOPIC%?contenttype=application/pdf
+</verbatim>
+
+Here's the complete Foswiki documentation in [[%SCRIPTURL{"view"}%/%SYSTEMWEB%/CompleteDocumentation?contenttype=application/pdf][PDF]].
+
+---++ Installation
+You will have to download Prince XML from http://www.princexml.com/download.
+
+%$INSTALL_INSTRUCTIONS%
+
+---++ Plugin Info
+
+|  Author: | Foswiki:Main.MichaelDaum |
+|  Copyright: | &copy; 2009, Michael Daum http://michaeldaumconsulting.com |
+|  License: | GPL ([[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]]) |
+|  Version: | %$RELEASE% |
+|  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  07 May 2009 | initial release |
+|  Home: | http://foswiki.org/Extensions/%TOPIC% |
+|  Support: | http://foswiki.org/Support/%TOPIC% |
+
