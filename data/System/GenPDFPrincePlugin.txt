@@ -18,13 +18,16 @@ You will have to download Prince XML from http://www.princexml.com/download.
 %$INSTALL_INSTRUCTIONS%
 
 ---++ Plugin Info
-
+<!--
+   * Set SHORTDESCRIPTION = 'Generate PDF using Prince XML';
+-->
 |  Author: | Foswiki:Main.MichaelDaum |
 |  Copyright: | &copy; 2009, Michael Daum http://michaeldaumconsulting.com |
 |  License: | GPL ([[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]]) |
-|  Version: | %$RELEASE% |
+|  Release: | %$RELEASE% |
+|  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
 |  07 May 2009 | initial release |
-|  Home: | http://foswiki.org/Extensions/%TOPIC% |
-|  Support: | http://foswiki.org/Support/%TOPIC% |
+|  Home: | Foswiki:Extensions/%TOPIC% |
+|  Support: | Foswiki:Support/%TOPIC% |
 
