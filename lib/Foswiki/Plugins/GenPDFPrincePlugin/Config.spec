@@ -1,3 +1,4 @@
+# ---+ Extensions
 # ---++ GenPDFPrincePlugin
 # **PATH M**
 # prince executable including complete path
