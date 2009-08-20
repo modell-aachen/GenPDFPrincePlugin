@@ -27,6 +27,7 @@ You will have to download Prince XML from http://www.princexml.com/download.
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  20 Aug 2009 | improved error handling |
 |  07 May 2009 | initial release |
 |  Home: | Foswiki:Extensions/%TOPIC% |
 |  Support: | Foswiki:Support/%TOPIC% |

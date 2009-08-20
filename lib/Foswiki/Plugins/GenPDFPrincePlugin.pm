@@ -24,8 +24,8 @@ use Foswiki::Func ();
 use Foswiki::Plugins ();
 use Error qw(:try);
 
-our $VERSION = '$Rev$';
-our $RELEASE = '1.0';
+our $VERSION = '$Rev: 4419 (2009-07-03) $';
+our $RELEASE = '1.1';
 our $SHORTDESCRIPTION = 'Generate PDF using Prince XML';
 our $NO_PREFS_IN_TOPIC = 1;
 
@@ -65,6 +65,7 @@ sub completePageHandler {
   # create temp files
   my $htmlFile = new File::Temp(SUFFIX => '.html');
   my $pdfFile = new File::Temp(SUFFIX => '.pdf');
+  my $errorFile = new File::Temp(SUFFIX => '.log');
 
   # creater html file
   print $htmlFile "$_[0]";
@@ -73,24 +74,28 @@ sub completePageHandler {
   my $session = $Foswiki::Plugins::SESSION;
   my $pubUrl = $session->getPubUrl(1);
   my $princeCmd = $Foswiki::cfg{GenPDFPrincePlugin}{PrinceCmd} || 
-    '/usr/bin/prince --baseurl %BASEURL|U% -i html -o %OUTFILE|F% %INFILE|F%';
+    '/usr/bin/prince --baseurl %BASEURL|U% -i html -o %OUTFILE|F% %INFILE|F% --log=%ERROR|F%';
 
   # execute
-  my ($output, $exit);
-  try {
-    ($output, $exit) = Foswiki::Sandbox->sysCommand(
+  my ($output, $exit) = Foswiki::Sandbox->sysCommand(
       $princeCmd, 
       BASEURL => $pubUrl,
       OUTFILE => $pdfFile->filename,
       INFILE => $htmlFile->filename,
+      ERROR => $errorFile->filename,
     );
-  } catch Error with {
-    print STDERR "ERROR: $_[0]\n";
-  }
-
-  # hm, where do we report failures
 
   local $/ = undef;
+
+  if ($exit) {
+    my $error = <$errorFile>;
+    my $html = $_[0];
+    my $line = 1;
+    $html = '00000: '.$html;
+    $html =~ s/\n/"\n".(sprintf "\%05d", $line++).": "/ge;
+    throw Error::Simple("execution of prince failed ($exit): \n\n$error\n\n$html");
+  }
+
   $_[0] = <$pdfFile>;
 }
 
