@@ -1,4 +1,4 @@
-%META:TOPICINFO{author="ProjectContributor" date="1241721334" format="1.1" version="1.2"}%
+%META:TOPICINFO{author="ProjectContributor" comment="save topic" date="1266576108" format="1.1" reprev="1.3" version="1.3"}%
 ---+!! %TOPIC%
 
 This plugin generates PDF using [[http://www.princexml.com/][Prince XML]].
@@ -15,6 +15,15 @@ Here's the complete Foswiki documentation in [[%SCRIPTURL{"view"}%/%SYSTEMWEB%/C
 ---++ Installation
 You will have to download Prince XML from http://www.princexml.com/download.
 
+If you are using other plugins that implement a =completePageHandler= (see InstalledPlugins) then you most
+probably need to tune the =$Foswiki::cfg{PluginsOrder}= to list the %TOPIC% behind those. For example,
+if you are using Foswiki:Extensions/ZonePlugin then you will have to list both giving them a specific order
+how they execute the =completePageHandler=:
+
+<verbatim>
+$Foswiki::cfg{PluginsOrder} = '...., ZonePlugin, GenPDFPrincePlugin';
+</verbatim>
+
 %$INSTALL_INSTRUCTIONS%
 
 ---++ Plugin Info
@@ -22,11 +31,12 @@ You will have to download Prince XML from http://www.princexml.com/download.
    * Set SHORTDESCRIPTION = 'Generate PDF using Prince XML';
 -->
 |  Author: | Foswiki:Main.MichaelDaum |
-|  Copyright: | &copy; 2009, Michael Daum http://michaeldaumconsulting.com |
+|  Copyright: | &copy; 2009-2010, Michael Daum http://michaeldaumconsulting.com |
 |  License: | GPL ([[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]]) |
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  07 Jun 2010 | added content-disposition to ease saving the pdf to disk |
 |  20 Aug 2009 | improved error handling |
 |  07 May 2009 | initial release |
 |  Home: | Foswiki:Extensions/%TOPIC% |

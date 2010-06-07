@@ -25,13 +25,22 @@ use Foswiki::Plugins ();
 use Error qw(:try);
 
 our $VERSION = '$Rev: 4419 (2009-07-03) $';
-our $RELEASE = '1.1';
+our $RELEASE = '1.2';
 our $SHORTDESCRIPTION = 'Generate PDF using Prince XML';
 our $NO_PREFS_IN_TOPIC = 1;
+our $baseTopic;
+our $baseWeb;
+
+use constant DEBUG => 0; # toggle me
+
+###############################################################################
+sub writeDebug {
+  print STDERR "GenPDFPrincePlugin - $_[0]\n" if DEBUG;
+}
 
 ###############################################################################
 sub initPlugin {
-  my ($topic, $web, $user, $installWeb) = @_;
+  ($baseTopic, $baseWeb) = @_;
 
   if ($Foswiki::Plugins::VERSION < 2.0) {
     Foswiki::Func::writeWarning('Version mismatch between ',
@@ -69,12 +78,16 @@ sub completePageHandler {
 
   # creater html file
   print $htmlFile "$_[0]";
+  #writeDebug("htmlFile=".$_[0]);
 
   # create prince command
   my $session = $Foswiki::Plugins::SESSION;
   my $pubUrl = $session->getPubUrl(1);
   my $princeCmd = $Foswiki::cfg{GenPDFPrincePlugin}{PrinceCmd} || 
     '/usr/bin/prince --baseurl %BASEURL|U% -i html -o %OUTFILE|F% %INFILE|F% --log=%ERROR|F%';
+
+  writeDebug("princeCmd=$princeCmd");
+  writeDebug("BASEURL=$pubUrl");
 
   # execute
   my ($output, $exit) = Foswiki::Sandbox->sysCommand(
@@ -87,8 +100,15 @@ sub completePageHandler {
 
   local $/ = undef;
 
+  my $error = '';
+  if ($exit || DEBUG) {
+    $error = <$errorFile>;
+  }
+
+  writeDebug("GenPDFPrincePlugin - error=$error");
+  writeDebug("GenPDFPrincePlugin - output=$output");
+
   if ($exit) {
-    my $error = <$errorFile>;
     my $html = $_[0];
     my $line = 1;
     $html = '00000: '.$html;
@@ -96,7 +116,22 @@ sub completePageHandler {
     throw Error::Simple("execution of prince failed ($exit): \n\n$error\n\n$html");
   }
 
+
   $_[0] = <$pdfFile>;
+}
+
+###############################################################################
+sub modifyHeaderHandler {
+  my ($hopts, $request) = @_;
+
+  my $query = Foswiki::Func::getCgiQuery();
+  my $contenttype = $query->param("contenttype") || 'text/html';
+
+  # is this a pdf view?
+  return unless $contenttype eq "application/pdf";
+
+  # add disposition
+  $hopts->{'Content-Disposition'} = "inline;filename=$baseTopic.pdf";
 }
 
 1;
