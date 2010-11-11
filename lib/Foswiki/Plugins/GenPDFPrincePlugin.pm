@@ -23,9 +23,10 @@ use strict;
 use Foswiki::Func ();
 use Foswiki::Plugins ();
 use Error qw(:try);
+use File::Path ();
 
 our $VERSION = '$Rev: 4419 (2009-07-03) $';
-our $RELEASE = '1.2';
+our $RELEASE = '1.30';
 our $SHORTDESCRIPTION = 'Generate PDF using Prince XML';
 our $NO_PREFS_IN_TOPIC = 1;
 our $baseTopic;
@@ -72,9 +73,9 @@ sub completePageHandler {
   $_[0] =~ s/(href=["'])\?.*(#[^"'\s])+/$1$2/g;
 
   # create temp files
-  my $htmlFile = new File::Temp(SUFFIX => '.html');
-  my $pdfFile = new File::Temp(SUFFIX => '.pdf');
-  my $errorFile = new File::Temp(SUFFIX => '.log');
+  my $htmlFile = new File::Temp(SUFFIX => '.html', UNLINK => (DEBUG?0:1));
+  my $errorFile = new File::Temp(SUFFIX => '.log', UNLINK => (DEBUG?0:1));
+  my ($pdfFilePath, $pdfFile) = getFileName($baseWeb, $baseTopic);
 
   # creater html file
   print $htmlFile "$_[0]";
@@ -82,7 +83,7 @@ sub completePageHandler {
 
   # create prince command
   my $session = $Foswiki::Plugins::SESSION;
-  my $pubUrl = $session->getPubUrl(1);
+  my $pubUrl = $session->getPubUrl(1); # SMELL: unofficial api
   my $princeCmd = $Foswiki::cfg{GenPDFPrincePlugin}{PrinceCmd} || 
     '/usr/bin/prince --baseurl %BASEURL|U% -i html -o %OUTFILE|F% %INFILE|F% --log=%ERROR|F%';
 
@@ -93,7 +94,7 @@ sub completePageHandler {
   my ($output, $exit) = Foswiki::Sandbox->sysCommand(
       $princeCmd, 
       BASEURL => $pubUrl,
-      OUTFILE => $pdfFile->filename,
+      OUTFILE => $pdfFilePath,
       INFILE => $htmlFile->filename,
       ERROR => $errorFile->filename,
     );
@@ -116,8 +117,31 @@ sub completePageHandler {
     throw Error::Simple("execution of prince failed ($exit): \n\n$error\n\n$html");
   }
 
+  my $url = Foswiki::Func::getScriptUrl($baseWeb, $baseTopic, 'viewfile',
+    filename=>$pdfFile,
+    t=>time(),
+  );
 
-  $_[0] = <$pdfFile>;
+  Foswiki::Func::redirectCgiQuery($query, $url);
+}
+
+###############################################################################
+sub getFileName {
+  my ($web, $topic) = @_;
+
+  my $fileName = $topic;
+  $fileName =~ s{[\\/]+$}{};
+  $fileName =~ s!^.*[\\/]!!;
+  $fileName =~ s/$Foswiki::regex{filenameInvalidCharRegex}//go;
+
+  $web =~ s/\./\//g;
+  my $filePath = Foswiki::Func::getPubDir().'/'.$web.'/'.$topic;
+  File::Path::make_path($filePath);
+
+  $fileName = 'genpdf_'.$fileName.'.pdf';
+  $filePath .= '/'.$fileName;
+
+  return ($filePath, $fileName);
 }
 
 ###############################################################################

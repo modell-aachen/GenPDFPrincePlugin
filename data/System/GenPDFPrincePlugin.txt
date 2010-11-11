@@ -1,7 +1,19 @@
-%META:TOPICINFO{author="ProjectContributor" comment="save topic" date="1266576108" format="1.1" reprev="1.3" version="1.3"}%
+%META:TOPICINFO{author="micha" comment="reprev" date="1289486358" format="1.1" reprev="3" version="3"}%
 ---+!! %TOPIC%
 
-This plugin generates PDF using [[http://www.princexml.com/][Prince XML]].
+This plugin generates PDF using the third-party tool [[http://www.princexml.com/][Prince XML]]. 
+You will have to download this tool from their site and agree on the [[http://www.princexml.com/license/][license terms and conditions]]. 
+Note that the non-commercial version can be used on a Foswiki server *for free*. In this case you will get a
+watermark at the top right corner of the generated pdf although not visible when printed out.
+
+<div class="foswikiImage">
+<img src="%ATTACHURLPATH%/watermark.jpeg" alt="watermark" width="670" height="210" />
+</div>
+
+In case you'd like to use Prince XML for commercial purposes or just want to
+get rid of this watermark, contact
+[[mailto:princexml@michaeldaumconsulting.com][<nobr>MD Consulting</nobr>]] to purchase a
+server license with a specific sales discount granted to Foswiki users.
 
 ---++ Usage
 
@@ -18,11 +30,13 @@ You will have to download Prince XML from http://www.princexml.com/download.
 If you are using other plugins that implement a =completePageHandler= (see InstalledPlugins) then you most
 probably need to tune the =$Foswiki::cfg{PluginsOrder}= to list the %TOPIC% behind those. For example,
 if you are using Foswiki:Extensions/ZonePlugin then you will have to list both giving them a specific order
-how they execute the =completePageHandler=:
+how they execute the =completePageHandler=
 
 <verbatim>
 $Foswiki::cfg{PluginsOrder} = '...., ZonePlugin, GenPDFPrincePlugin';
 </verbatim>
+
+Note, that !ZonePlugin is not required anymore in newer Foswiki engines > 1.1.0. 
 
 %$INSTALL_INSTRUCTIONS%
 
@@ -36,9 +50,12 @@ $Foswiki::cfg{PluginsOrder} = '...., ZonePlugin, GenPDFPrincePlugin';
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  11 Nov 2010 | fixing incomplete image data in pdf |
 |  07 Jun 2010 | added content-disposition to ease saving the pdf to disk |
 |  20 Aug 2009 | improved error handling |
 |  07 May 2009 | initial release |
 |  Home: | Foswiki:Extensions/%TOPIC% |
 |  Support: | Foswiki:Support/%TOPIC% |
 
+
+%META:FILEATTACHMENT{name="watermark.jpeg" attachment="watermark.jpeg" attr="h" comment="" date="1289486214" size="19690" user="micha" version="1"}%
