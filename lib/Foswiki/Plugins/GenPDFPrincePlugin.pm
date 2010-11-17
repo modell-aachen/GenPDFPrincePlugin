@@ -26,7 +26,7 @@ use Error qw(:try);
 use File::Path ();
 
 our $VERSION = '$Rev: 4419 (2009-07-03) $';
-our $RELEASE = '1.30';
+our $RELEASE = '1.31';
 our $SHORTDESCRIPTION = 'Generate PDF using Prince XML';
 our $NO_PREFS_IN_TOPIC = 1;
 our $baseTopic;
@@ -136,7 +136,7 @@ sub getFileName {
 
   $web =~ s/\./\//g;
   my $filePath = Foswiki::Func::getPubDir().'/'.$web.'/'.$topic;
-  File::Path::make_path($filePath);
+  File::Path::mkpath($filePath);
 
   $fileName = 'genpdf_'.$fileName.'.pdf';
   $filePath .= '/'.$fileName;
