@@ -173,6 +173,8 @@ sub modifyHeaderHandler {
   # add disposition
   my $disposition = ($query->param("attachment"))?'attachment':'inline';
   $hopts->{'Content-Disposition'} = "$disposition;filename=$baseTopic.pdf";
+  # Ensure contentype, some scripts (like compare) change it
+  $hopts->{'Content-Type'} = 'application/pdf';
 }
 
 1;
