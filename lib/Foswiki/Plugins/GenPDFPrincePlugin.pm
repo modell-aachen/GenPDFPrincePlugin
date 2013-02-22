@@ -63,6 +63,10 @@ sub completePageHandler {
   # is this a pdf view?
   return unless $contenttype eq "application/pdf";
 
+  # don't print login-boxes
+  my $wikiName = Foswiki::Func::getWikiName();
+  return unless Foswiki::Func::checkAccessPermission( 'VIEW', $wikiName, undef, $baseTopic, $baseWeb ); 
+
   require File::Temp;
   require Foswiki::Sandbox;
 
@@ -78,9 +82,10 @@ sub completePageHandler {
   $_[0] =~ s/(<img[^>]+src=["'])([^"']+)(["'])/$1.toFileUrl($2).$3/ge;
 
   # create temp files
+  my $modactmpDir = Foswiki::Func::getWorkArea( 'GenPDFPrincePlugin' );
   my $htmlFile = new File::Temp(SUFFIX => '.html', UNLINK => (DEBUG?0:1));
   my $errorFile = new File::Temp(SUFFIX => '.log', UNLINK => (DEBUG?0:1));
-  my ($pdfFilePath, $pdfFile) = getFileName($baseWeb, $baseTopic);
+  my $modacpdfFile = new File::Temp(DIR => $modactmpDir, SUFFIX => '.pdf', UNLINK => (DEBUG?0:1));
 
   # creater html file
   my $content = Encode::decode($Foswiki::cfg{Site}{CharSet}, $_[0]);
@@ -101,7 +106,7 @@ sub completePageHandler {
   my ($output, $exit) = Foswiki::Sandbox->sysCommand(
       $princeCmd, 
       BASEURL => $pubUrl,
-      OUTFILE => $pdfFilePath,
+      OUTFILE => $modacpdfFile->filename,
       INFILE => $htmlFile->filename,
       ERROR => $errorFile->filename,
     );
@@ -124,31 +129,10 @@ sub completePageHandler {
     throw Error::Simple("execution of prince failed ($exit): \n\n$error\n\n$html");
   }
 
-  my $url = Foswiki::Func::getScriptUrl($baseWeb, $baseTopic, 'viewfile',
-    filename=>$pdfFile,
-    t=>time(),
-  );
-
-  Foswiki::Func::redirectCgiQuery($query, $url);
-}
-
-###############################################################################
-sub getFileName {
-  my ($web, $topic) = @_;
-
-  my $fileName = $topic;
-  $fileName =~ s{[\\/]+$}{};
-  $fileName =~ s!^.*[\\/]!!;
-  $fileName =~ s/$Foswiki::regex{filenameInvalidCharRegex}//go;
-
-  $web =~ s/\./\//g;
-  my $filePath = Foswiki::Func::getPubDir().'/'.$web.'/'.$topic;
-  File::Path::mkpath($filePath);
-
-  $fileName = 'genpdf_'.$fileName.'.pdf';
-  $filePath .= '/'.$fileName;
-
-  return ($filePath, $fileName);
+  $_[0] = <$modacpdfFile>;
+  # Foswiki.pm will remove <nop> and <noautolink>, so we need to escape it
+  $_[0] =~ s#<(/?(?:nop|noautolink)/?)>#<<nop>$1>#g;
+  return;
 }
 
 ###############################################################################
