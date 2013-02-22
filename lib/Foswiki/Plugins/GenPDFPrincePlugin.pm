@@ -171,7 +171,8 @@ sub modifyHeaderHandler {
   return unless $contenttype eq "application/pdf";
 
   # add disposition
-  $hopts->{'Content-Disposition'} = "inline;filename=$baseTopic.pdf";
+  my $disposition = ($query->param("attachment"))?'attachment':'inline';
+  $hopts->{'Content-Disposition'} = "$disposition;filename=$baseTopic.pdf";
 }
 
 1;
