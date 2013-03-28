@@ -19,8 +19,16 @@ server license with a specific sales discount granted to Foswiki users.
 
 Get a PDF by adding =contenttype=application/pdf= to the view url like this:
 <verbatim class="tml">
-%SCRIPTURL{"view"}/%WEB%/%TOPIC%?contenttype=application/pdf
+%SCRIPTURL{"view"}/%WEB%/%TOPIC%?contenttype=application/pdf&cover=print
 </verbatim>
+
+Optionally an url parameter =outfile= can be used to specifiy the target filename of the pdf being generated.
+If not specified explicitly it defaults to =genpdf_%!TOPIC%.pdf=
+
+<verbatim class="tml">
+%SCRIPTURL{"view"}/%WEB%/%TOPIC%?contenttype=application/pdf&cover=print&outfile=myreport.pdf
+</verbatim>
+
 
 Here's the complete Foswiki documentation in [[%SCRIPTURL{"view"}%/%SYSTEMWEB%/CompleteDocumentation?contenttype=application/pdf][PDF]].
 
@@ -45,11 +53,12 @@ Note, that !ZonePlugin is not required anymore in newer Foswiki engines > 1.1.0.
    * Set SHORTDESCRIPTION = 'Generate PDF using Prince XML';
 -->
 |  Author: | Foswiki:Main.MichaelDaum |
-|  Copyright: | &copy; 2009-2012, Michael Daum http://michaeldaumconsulting.com |
+|  Copyright: | &copy; 2009-2013, Michael Daum http://michaeldaumconsulting.com |
 |  License: | GPL ([[http://www.gnu.org/copyleft/gpl.html][GNU General Public License]]) |
 |  Release: | %$RELEASE% |
 |  Version: | %$VERSION% |
 |  Change History: | <!-- versions below in reverse order -->&nbsp; |
+|  18 Mar 2013 | added outfile url param to specify the file name of the pdf being generated |
 |  08 Mar 2012 | fixed encoding of charset fed to prince xml; \
                  rewrite img urls from http: to file: urls while prince works on the local filesystem generating pdf |
 |  17 Nov 2010 | using legacy interface =mkpath= to =make_path= to please older perl versions |
