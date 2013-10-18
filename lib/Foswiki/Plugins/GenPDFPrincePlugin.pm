@@ -88,7 +88,10 @@ sub completePageHandler {
   my $modacpdfFile = new File::Temp(DIR => $modactmpDir, SUFFIX => '.pdf', UNLINK => (DEBUG?0:1));
 
   # creater html file
-  my $content = Encode::decode($Foswiki::cfg{Site}{CharSet}, $_[0]);
+  my $content = $_[0];
+  if ($Foswiki::cfg{Site}{CharSet} !~ /^utf-?8$/i) {
+    $content = Encode::encode('UTF-8', Encode::decode($Foswiki::cfg{Site}{CharSet} || 'iso-8859-1', $content));
+  }
 
   print $htmlFile $content;
   writeDebug("htmlFile=".$htmlFile->filename);
