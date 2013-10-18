@@ -27,7 +27,7 @@ use File::Path ();
 use Encode ();
 
 our $VERSION = '$Rev: 4419 (2009-07-03) $';
-our $RELEASE = '1.32.1';
+our $RELEASE = '1.32.2';
 our $SHORTDESCRIPTION = 'Generate PDF using Prince XML';
 our $NO_PREFS_IN_TOPIC = 1;
 our $baseTopic;
