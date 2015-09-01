@@ -98,7 +98,7 @@ sub completePageHandler {
 
   # create prince command
   my $session = $Foswiki::Plugins::SESSION;
-  my $pubUrl = $session->getPubUrl(1); # SMELL: unofficial api
+  my $pubUrl = $session->getPubURL(1); # SMELL: unofficial api
   my $princeCmd = $Foswiki::cfg{GenPDFPrincePlugin}{PrinceCmd} || 
     '/usr/bin/prince --baseurl %BASEURL|U% -i html -o %OUTFILE|F% %INFILE|F% --log=%ERROR|F%';
 
