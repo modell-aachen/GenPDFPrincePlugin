@@ -33,11 +33,11 @@ our $NO_PREFS_IN_TOPIC = 1;
 our $baseTopic;
 our $baseWeb;
 
-use constant DEBUG => 0; # toggle me
+use constant TRACE => 0; # toggle me
 
 ###############################################################################
 sub writeDebug {
-  print STDERR "GenPDFPrincePlugin - $_[0]\n" if DEBUG;
+  print STDERR "GenPDFPrincePlugin - $_[0]\n" if TRACE;
 }
 
 ###############################################################################
@@ -90,8 +90,8 @@ sub completePageHandler {
 
   # create temp files
   my $modactmpDir = Foswiki::Func::getWorkArea( 'GenPDFPrincePlugin' );
-  my $htmlFile = new File::Temp(DIR => $modactmpDir, SUFFIX => '.html', UNLINK => (DEBUG?0:1));
-  my $errorFile = new File::Temp(DIR => $modactmpDir, SUFFIX => '.log', UNLINK => (DEBUG?0:1));
+  my $htmlFile = new File::Temp(DIR => $modactmpDir, SUFFIX => '.html', UNLINK => (TRACE?0:1));
+  my $errorFile = new File::Temp(DIR => $modactmpDir, SUFFIX => '.log', UNLINK => (TRACE?0:1));
   my $modacpdfFile = new File::Temp(DIR => $modactmpDir, TEMPLATE => "${wikiName}XXXXXXXX", SUFFIX => '.pdf', UNLINK => 0);
   die unless $modacpdfFile =~ m#^$modactmpDir/$wikiName(.*)\.pdf$#;
   my $token = $1;
@@ -130,7 +130,7 @@ sub completePageHandler {
   local $/ = undef;
 
   my $error = '';
-  if ($exit || DEBUG) {
+  if ($exit || TRACE) {
     $error = <$errorFile>;
   }
 
