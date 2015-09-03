@@ -50,6 +50,13 @@ sub initPlugin {
     return 0;
   }
 
+  Foswiki::Func::registerRESTHandler(
+    'getFile', \&_restGetFile,
+    authenticate => 1,
+    http_allow => 'GET',
+    validate => 0
+  );
+
   return 1;
 }
 
@@ -83,14 +90,20 @@ sub completePageHandler {
 
   # create temp files
   my $modactmpDir = Foswiki::Func::getWorkArea( 'GenPDFPrincePlugin' );
-  my $htmlFile = new File::Temp(SUFFIX => '.html', UNLINK => (DEBUG?0:1));
-  my $errorFile = new File::Temp(SUFFIX => '.log', UNLINK => (DEBUG?0:1));
-  my $modacpdfFile = new File::Temp(DIR => $modactmpDir, SUFFIX => '.pdf', UNLINK => (DEBUG?0:1));
+  my $htmlFile = new File::Temp(DIR => $modactmpDir, SUFFIX => '.html', UNLINK => (DEBUG?0:1));
+  my $errorFile = new File::Temp(DIR => $modactmpDir, SUFFIX => '.log', UNLINK => (DEBUG?0:1));
+  my $modacpdfFile = new File::Temp(DIR => $modactmpDir, TEMPLATE => "${wikiName}XXXXXXXX", SUFFIX => '.pdf', UNLINK => 0);
+  die unless $modacpdfFile =~ m#^$modactmpDir/$wikiName(.*)\.pdf$#;
+  my $token = $1;
 
   # creater html file
   my $content = $_[0];
   if ($Foswiki::cfg{Site}{CharSet} !~ /^utf-?8$/i) {
     $content = Encode::encode('UTF-8', Encode::decode($Foswiki::cfg{Site}{CharSet} || 'iso-8859-1', $content));
+  }
+
+  if($Foswiki::UNICODE) {
+    $content = Foswiki::encode_utf8($content);
   }
 
   print $htmlFile $content;
@@ -132,9 +145,17 @@ sub completePageHandler {
     throw Error::Simple("execution of prince failed ($exit): \n\n$error\n\n$html");
   }
 
-  $_[0] = <$modacpdfFile>;
-  # Foswiki.pm will remove <nop> and <noautolink>, so we need to escape it
-  $_[0] =~ s#<(/?(?:nop|noautolink)/?)>#<<nop>$1>#g;
+  my $attachment = $query->param('attachment') || 0;
+
+  my $redirect = Foswiki::Func::getScriptUrl(
+    'GenPDFPrincePlugin', 'getFile', 'rest',
+    token => $token,
+    wikiname => $wikiName,
+    attachment => $attachment,
+    basetopic => $baseTopic,
+    baseweb => $baseWeb
+  );
+  Foswiki::Func::redirectCgiQuery( undef, $redirect );
   return;
 }
 
@@ -164,20 +185,64 @@ sub toFileUrl {
 }
 
 ###############################################################################
-sub modifyHeaderHandler {
-  my ($hopts, $request) = @_;
+sub _restGetFile {
+  my ($session, $verb, $subject, $response) = @_;
 
   my $query = Foswiki::Func::getCgiQuery();
-  my $contenttype = $query->param("contenttype") || 'text/html';
+  my $token = $query->param('token');
+  my $baseTopic = $query->param('basetopic') || 'unknown';
+  my $baseWeb = $query->param('baseweb') || 'unknown';
+  my $wikiName = $query->param('wikiname');
 
-  # is this a pdf view?
-  return unless $contenttype eq "application/pdf";
+  unless ($wikiName eq Foswiki::Func::getWikiName()) {
+    my $heading = Foswiki::Func::expandCommonVariables('%MAKETEXT{"User mismatch for printout."}%');
+    my $message = Foswiki::Func::expandCommonVariables('%MAKETEXT{"The PDF file you are trying to access was not created by you. This may have been caused by the browser cache. Please create a new PDF."}%');
+    throw Foswiki::OopsException(
+        'oopsgeneric',
+        web => $baseWeb,
+        topic => $baseTopic,
+        params => [ $heading, $message ]
+    );
+  }
 
-  # add disposition
-  my $disposition = ($query->param("attachment"))?'attachment':'inline';
-  $hopts->{'Content-Disposition'} = "$disposition;filename=$baseTopic.pdf";
-  # Ensure contentype, some scripts (like compare) change it
-  $hopts->{'Content-Type'} = 'application/pdf';
+  my $modactmpDir = Foswiki::Func::getWorkArea( 'GenPDFPrincePlugin' );
+  my $filename = "$modactmpDir/$wikiName$token.pdf";
+  unless (-e $filename) {
+    my $heading = Foswiki::Func::expandCommonVariables('%MAKETEXT{"Printout no longer available."}%');
+    my $message = Foswiki::Func::expandCommonVariables('%MAKETEXT{"The PDF file you are trying to access is no longer available on the server. This may have been caused by the browser cache. Please create a new PDF."}%');
+    throw Foswiki::OopsException(
+        'oopsgeneric',
+        web => $baseWeb,
+        topic => $baseTopic,
+        params => [ $heading, $message ]
+    );
+  }
+
+  my $file; # note: can not use Foswiki::Func::readFile, because I need binary stuff
+  unless (open ( $file, "<", $filename )) {
+    my $heading = Foswiki::Func::expandCommonVariables('%MAKETEXT{"Error opening printout."}%');
+    my $message = Foswiki::Func::expandCommonVariables('%MAKETEXT{"There was an error opening the PDF file. This is most likely due to a misconfiguration."}%');
+    throw Foswiki::OopsException(
+        'oopsgeneric',
+        web => $baseWeb,
+        topic => $baseTopic,
+        params => [ $heading, $message ]
+    );
+  };
+  binmode($file, ":raw");
+
+  local $/;
+  my $pdf = <$file>;
+
+  close $file;
+  unlink $filename;
+
+  $response->body($pdf);
+  $response->headers({
+    'Content-Type' => 'application/pdf',
+    'Content-Disposition' => (($query->param("attachment"))?'attachment':'inline') . ";filename=$baseTopic.pdf"
+  });
+  return;
 }
 
 1;
