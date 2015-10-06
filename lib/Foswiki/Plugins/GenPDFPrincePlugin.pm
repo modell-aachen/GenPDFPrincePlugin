@@ -245,4 +245,38 @@ sub _restGetFile {
   return;
 }
 
+sub maintenanceHandler {
+    Foswiki::Plugins::MaintenancePlugin::registerCheck("GenPDFPrincePlugin:trace", {
+        name => "GenPDFPlugin TRACE",
+        description => "GenPDFPlugin's TRACE (debug mode) is active",
+        check => sub {
+            if(TRACE) {
+                return {
+                    result => 1,
+                    priority => Foswiki::Plugins::MaintenancePlugin::WARN,
+                    solution => "Please edit Foswiki/Plugins/GenPDFPrincePlugin and set TRACE to 0."
+                }
+            } else {
+                return { result => 0 };
+            }
+        }
+    });
+    Foswiki::Plugins::MaintenancePlugin::registerCheck("GenPDFPrincePlugin:workarea", {
+        name => "Temporary files for GenPDFPlugin",
+        description => "GenPDFPlugin's workarea containts garbage",
+        check => sub {
+            my $result = { result => 0 };
+            my $modactmpDir = Foswiki::Func::getWorkArea( 'GenPDFPrincePlugin' );
+            my @files = <$modactmpDir/*.{html,log,pdf}>;
+            if ( scalar @files ) {
+                use Foswiki::Plugins::MaintenancePlugin;
+                $result->{result} = 1;
+                $result->{priority} = Foswiki::Plugins::MaintenancePlugin::WARN;
+                $result->{solution} = "Please delete leftover pdf/log/html files in $modactmpDir";
+            }
+            return $result;
+        }
+    });
+}
+
 1;
