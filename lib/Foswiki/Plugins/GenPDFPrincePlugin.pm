@@ -253,7 +253,7 @@ sub maintenanceHandler {
             if(TRACE) {
                 return {
                     result => 1,
-                    priority => Foswiki::Plugins::MaintenancePlugin::WARN,
+                    priority => $Foswiki::Plugins::MaintenancePlugin::WARN,
                     solution => "Please edit Foswiki/Plugins/GenPDFPrincePlugin and set TRACE to 0."
                 }
             } else {
@@ -271,7 +271,7 @@ sub maintenanceHandler {
             if ( scalar @files ) {
                 use Foswiki::Plugins::MaintenancePlugin;
                 $result->{result} = 1;
-                $result->{priority} = Foswiki::Plugins::MaintenancePlugin::WARN;
+                $result->{priority} = $Foswiki::Plugins::MaintenancePlugin::WARN;
                 $result->{solution} = "Please delete leftover pdf/log/html files in $modactmpDir";
             }
             return $result;
