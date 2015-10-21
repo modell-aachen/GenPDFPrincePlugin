@@ -269,7 +269,6 @@ sub maintenanceHandler {
             my $modactmpDir = Foswiki::Func::getWorkArea( 'GenPDFPrincePlugin' );
             my @files = <$modactmpDir/*.{html,log,pdf}>;
             if ( scalar @files ) {
-                use Foswiki::Plugins::MaintenancePlugin;
                 $result->{result} = 1;
                 $result->{priority} = $Foswiki::Plugins::MaintenancePlugin::WARN;
                 $result->{solution} = "Please delete leftover pdf/log/html files in $modactmpDir";
